@@ -86,10 +86,9 @@ log "CUDA-пристроїв: $gpus"
 if [ -z "$DEVICE" ]; then
   if [ "$gpus" -gt 0 ]; then DEVICE=cuda; else DEVICE=cpu; fi
 fi
-# float16 на CPU не підтримується, там потрібен int8
-if [ -z "$COMPUTE_TYPE" ]; then
-  if [ "$DEVICE" = cuda ]; then COMPUTE_TYPE=float16; else COMPUTE_TYPE=int8; fi
-fi
+# float32 однаковий на CPU і GPU: результат не залежить від машини.
+# float16 працює лише на GPU, int8 — квантизація з втратою якості.
+COMPUTE_TYPE="${COMPUTE_TYPE:-float32}"
 log "пристрій: $DEVICE, обчислення: $COMPUTE_TYPE"
 
 if [ -n "$HF_TOKEN" ]; then
