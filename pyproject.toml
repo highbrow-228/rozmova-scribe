@@ -1,0 +1,14 @@
+[project]
+name = "transcribe"
+version = "0.1.0"
+description = "Транскрипція та діаризація українського аудіо через faster-whisper і pyannote"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "whisper-ctranslate2==0.5.7",
+    "pyannote-audio==4.0.7",
+    "nvidia-cublas-cu12",
+    "nvidia-cudnn-cu12==9.25.1.1",
+]
+
+[tool.uv]
+package = false
