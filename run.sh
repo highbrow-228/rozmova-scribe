@@ -14,6 +14,8 @@ cli_SPEAKER_NUM="${SPEAKER_NUM:-}"
 cli_OUTPUT_FORMAT="${OUTPUT_FORMAT:-}"
 cli_HOTWORDS="${HOTWORDS:-}"
 cli_INITIAL_PROMPT="${INITIAL_PROMPT:-}"
+cli_DEVICE="${DEVICE:-}"
+cli_COMPUTE_TYPE="${COMPUTE_TYPE:-}"
 
 set -a; source "$BASE/.env"; set +a
 
@@ -22,6 +24,9 @@ SPEAKER_NUM="${cli_SPEAKER_NUM:-${SPEAKER_NUM:-2}}"
 OUTPUT_FORMAT="${cli_OUTPUT_FORMAT:-${OUTPUT_FORMAT:-txt}}"
 HOTWORDS="${cli_HOTWORDS:-${HOTWORDS:-}}"
 INITIAL_PROMPT="${cli_INITIAL_PROMPT:-${INITIAL_PROMPT:-}}"
+# порожні = визначити автоматично після активації оточення
+DEVICE="${cli_DEVICE:-${DEVICE:-}}"
+COMPUTE_TYPE="${cli_COMPUTE_TYPE:-${COMPUTE_TYPE:-}}"
 
 # порожні підказки не передаємо взагалі, а не порожнім рядком
 hints=()
@@ -51,7 +56,19 @@ export LD_LIBRARY_PATH=$(find "$VIRTUAL_ENV" -type d -path '*/nvidia/*' -name li
 export HF_HOME="$BASE/cache/hf-cache"
 export PYTHONWARNINGS="ignore::UserWarning"
 
-log "CUDA-пристроїв: $(python3 -c 'import ctranslate2; print(ctranslate2.get_cuda_device_count())')"
+gpus=$(python3 -c 'import ctranslate2; print(ctranslate2.get_cuda_device_count())')
+log "CUDA-пристроїв: $gpus"
+
+# пристрій вказуємо явно: за --device auto діаризація пішла б на CPU
+if [ -z "$DEVICE" ]; then
+  if [ "$gpus" -gt 0 ]; then DEVICE=cuda; else DEVICE=cpu; fi
+fi
+# float16 на CPU не підтримується, там потрібен int8
+if [ -z "$COMPUTE_TYPE" ]; then
+  if [ "$DEVICE" = cuda ]; then COMPUTE_TYPE=float16; else COMPUTE_TYPE=int8; fi
+fi
+log "пристрій: $DEVICE, обчислення: $COMPUTE_TYPE"
+
 if [ -n "$HF_TOKEN" ]; then
   log "токен HF: ${HF_TOKEN:0:2}...${HF_TOKEN: -3}"
 else
@@ -72,7 +89,8 @@ log "діаризація + транскрипція (перший етап бе
 whisper-ctranslate2 "$wav" \
   --model "$model" \
   --language "$LANGUAGE" \
-  --compute_type float16 \
+  --device "$DEVICE" \
+  --compute_type "$COMPUTE_TYPE" \
   --beam_size 5 \
   --condition_on_previous_text False \
   --vad_filter True \
