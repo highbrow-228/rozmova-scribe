@@ -49,7 +49,7 @@ log "модель: $model${tag:+, мітка: ${tag#_}}"
 log "мова: $LANGUAGE, спікерів: $SPEAKER_NUM, формат: $OUTPUT_FORMAT"
 h_state=немає; [ -n "$HOTWORDS" ] && h_state=задано
 p_state=немає; [ -n "$INITIAL_PROMPT" ] && p_state=задано
-log "підказки: hotwords — $h_state, initial_prompt — $p_state"
+log "підказки: hotwords - $h_state, initial_prompt - $p_state"
 
 source "$BASE/.venv/bin/activate"
 export LD_LIBRARY_PATH=$(find "$VIRTUAL_ENV" -type d -path '*/nvidia/*' -name lib | tr '\n' ':')
@@ -64,7 +64,7 @@ if [ -z "$DEVICE" ]; then
   if [ "$gpus" -gt 0 ]; then DEVICE=cuda; else DEVICE=cpu; fi
 fi
 # float32 однаковий на CPU і GPU: результат не залежить від машини.
-# float16 працює лише на GPU, int8 — квантизація з втратою якості.
+# float16 працює лише на GPU, int8 - квантизація з втратою якості.
 COMPUTE_TYPE="${COMPUTE_TYPE:-float32}"
 log "пристрій: $DEVICE, обчислення: $COMPUTE_TYPE"
 

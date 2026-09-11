@@ -1,0 +1,8 @@
+.venv/
+bin/
+cache/
+data/
+.git/
+.env
+README.md
+LICENSE
